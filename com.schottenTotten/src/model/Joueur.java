@@ -16,6 +16,10 @@ public class Joueur {
     private int joueurId;
     /* Joueur humain ou ordinateur */
     private boolean humain;
+    /** Nombre de carte tactique jouée */
+    private int nbCarteTactique;
+    /** Si il a déjà joué un joker */
+    private boolean jokerJoue;
 
     /**
      * Constructeur de la classe Joueur.
@@ -25,11 +29,13 @@ public class Joueur {
      * @param joueur Joueur 1 ou 2
      */
     public Joueur(String nom, int joueur, boolean humain) {
+        this.nbCarteTactique = 0;
         this.nom = nom;
         this.cartes = new ArrayList<>();
         this.bornesRevendiquees = new ArrayList<>();
         this.joueurId = joueur;
         this.humain = humain;
+        this.jokerJoue = false;
     }
 
     /**
@@ -127,6 +133,43 @@ public class Joueur {
         bornesRevendiquees.add(idBorne);
     }
 
+    /** Supprimer une borne revendiquée par le joueur.
+     * @param idBorne L'id de la borne revendiquée. */
+    public void supprimerBorneRevendiquee(int idBorne) {
+        bornesRevendiquees.remove(Integer.valueOf(idBorne));
+    }
+
+    /**
+     * Ajouter une carte tactique jouée par le joueur.
+     */
+    public void aJoueCarteTactique() {
+        nbCarteTactique++;
+    }
+
+    /**
+     * Retourner le nombre de carte tactique jouée par le joueur.
+     * 
+     * @return Le nombre de carte tactique jouée par le joueur.
+     */
+    public int getNbCarteTactique() {
+        return nbCarteTactique;
+    }
+
+    /**
+     * Retourner si le joueur a déjà joué un joker.
+     * 
+     * @return true si le joueur a déjà joué un joker, false sinon.
+     */
+    public boolean aJoueJoker() {
+        return jokerJoue;
+    }
+
+    /** Setter si le joueur a déjà joué un joker
+     * @param jokerJoue true si le joueur a déjà joué un joker, false sinon */
+    public void setJokerJoue(boolean jokerJoue) {
+        this.jokerJoue = jokerJoue;
+    }
+
     /**
      * Vérifier si le joueur est gagnant.
      * 
@@ -191,15 +234,13 @@ public class Joueur {
         cartes.remove(carte);
     }
 
-    /** Méthode pour afficher les cartes du joueur. */
-    public void afficherCartes() {
-        for (int i = 0; i < cartes.size(); i++) {
-            Carte carte = cartes.get(i);
-            System.out.print(carte.toString() + " ");
-        }
-        System.out.println();
+    /** Supprimer une carte by id de la carte cad supprimer la carte i - 1
+     * @param idCarte l'id de la carte */
+    public void supprimerCarte(int idCarte) {
+        cartes.remove(idCarte - 1);
     }
 
+    /** Méthode pour afficher le joueur. */
     @Override
     public String toString() {
         // id des bornes revendiquées

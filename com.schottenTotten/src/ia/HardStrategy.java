@@ -5,6 +5,10 @@ import model.Borne;
 import model.Carte;
 import controller.JeuController;
 
+/**
+ * Stratégie difficile pour l'IA.
+ * Cette stratégie permet à l'IA de jouer une carte avec le score maximal sur la première borne non remplie.
+ */
 public class HardStrategy implements Strategy {
 
         /** Score entre chaque niveau. */
@@ -20,6 +24,11 @@ public class HardStrategy implements Strategy {
         /** Multiplicateur pour la somme. */
         private static final int SOMME = 1;
 
+    /** 
+     * Jouer un tour pour l'IA.
+     * @param jeuController le contrôleur du jeu
+     * @param idJoueur l'identifiant du joueur
+     */
     @Override
     public void jouer(JeuController jeuController, int idJoueur) {
         List<Borne> bornes = jeuController.getBornes();
@@ -29,7 +38,7 @@ public class HardStrategy implements Strategy {
         int idBorneChoisie = -1;
         Carte carteChoisie = null;
 
-        // Étape 1 : Parcourir chaque borne non contrôlée
+        // Étape 1 : Parcourir chaque borne non remplie
         for (Borne borne : bornes) {
             List<Carte> cartesSurBorne = new ArrayList<>();
             
@@ -60,13 +69,18 @@ public class HardStrategy implements Strategy {
         // Étape 3 : Jouer la meilleure carte sur la borne choisie
         if (idBorneChoisie != -1 && carteChoisie != null) {
             int idCarte = cartesDisponibles.indexOf(carteChoisie) + 1; // +1 car les indices des cartes commencent à 1
-            jeuController.jouerTour(idBorneChoisie, idCarte);
+            jeuController.jouerTour(idBorneChoisie, idCarte, false);
             System.out.println("IA (difficile) a joué une carte avec score maximal sur la borne " + idBorneChoisie);
         } else {
             System.out.println("IA (difficile) n'a pas pu trouver une action optimale.");
         }
     }
 
+    /**
+     * Évaluer une combinaison de cartes.
+     * @param cartes la combinaison de cartes
+     * @return le score de la combinaison
+     */
     public static int evaluerCombinaison(List<Carte> cartes) {
         // Si aucune carte n'est présente, le score est nul
         if (cartes.isEmpty()) {

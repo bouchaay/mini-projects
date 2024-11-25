@@ -20,6 +20,10 @@ public class JeuController {
     private Joueur joueur2;
     /** Le tour manager */
     private TourManager tourManager;
+    /** Le nombre de cartes à distribuer à un joueur */
+    private int nbCartes;
+    /** Boolean pour variante tactique */
+    private boolean varianteTactique;
 
     /**
      * Constructeur de JeuController.
@@ -28,7 +32,9 @@ public class JeuController {
      * @param joueur1 le premier joueur
      * @param joueur2 le deuxième joueur
      */
-    public JeuController(Joueur joueur1, Joueur joueur2) {
+    public JeuController(Joueur joueur1, Joueur joueur2, int nbCartes, boolean varianteTactique) {
+        this.nbCartes = nbCartes;
+        this.varianteTactique = varianteTactique;
         // Créer les bornes
         this.bornes = new ArrayList<Borne>();
         for (int i = 1; i <= 9; i++) {
@@ -36,7 +42,7 @@ public class JeuController {
         }
 
         // Créer le plateau
-        this.plateau = new Plateau();
+        this.plateau = new Plateau(this.nbCartes, this.varianteTactique);
 
         // Les joueurs
         this.joueur1 = joueur1;
@@ -46,6 +52,7 @@ public class JeuController {
         this.tourManager = new TourManager(joueur1, joueur2);
     }
 
+    /** Méthode pour commencer une partie */
     public void commencerPartie() {
         // On distribue les cartes
         plateau.distribuerCartesDepart(joueur1);
@@ -55,12 +62,20 @@ public class JeuController {
     /** Méthode pour jouer un tour
      * @param idBorne l'identifiant de la borne
      * @param idCarte l'identifiant de la carte
+     * @param isTactique true si la carte a distribué une carte tactique, false sinon
+     * @param colinJoue true si Colin a joué, false sinon
      * @return true si le tour a été joué, false sinon */
-    public boolean jouerTour(int idBorne, int idCarte) {
+    public boolean jouerTour(int idBorne, int idCarte, boolean isTactique) {
         Joueur joueurCourant = tourManager.getJoueurCourant();
         Borne borne = bornes.get(idBorne - 1);
         Carte carte = joueurCourant.getCarte(idCarte - 1);
-        return jouerCarte(borne, carte, joueurCourant);
+        return jouerCarte(borne, carte, joueurCourant, isTactique);
+    }
+
+    public boolean jouerTourNonConcret(int idCarte, boolean isTactique) {
+        Joueur joueurCourant = tourManager.getJoueurCourant();
+        Carte carte = joueurCourant.getCarte(idCarte - 1);
+        return jouerCarteNonConcrete(carte, joueurCourant, isTactique);
     }
 
     /** Vérifier s'il y a un gagnant.
@@ -84,14 +99,15 @@ public class JeuController {
      * @param borne la borne sur laquelle jouer
      * @param carte la carte à jouer
      * @param joueur le joueur qui joue
+     * @param isTacitque true si la carte a distribué une carte tactique, false sinon
+     * @param colinJoue true si Colin a joué, false sinon
      * @return true si la carte a été jouée, false sinon
      */
-    public boolean jouerCarte(Borne borne, Carte carte, Joueur joueur) {
-        if (!borne.isControlee()) {
+    public boolean jouerCarte(Borne borne, Carte carte, Joueur joueur, boolean isTactique) {
             int idJoueur = joueur.getJoueur();
             switch (idJoueur) {
                 case 1:
-                    if (borne.getCartesJoueur1().size() < 3) {
+                    if (borne.getCartesJoueur1().size() < borne.getTaille()) {
                         borne.getCartesJoueur1().add(carte);
                     } else {
                         if (joueur.estHumain()) {
@@ -101,7 +117,7 @@ public class JeuController {
                     }
                     break;
                 case 2:
-                    if (borne.getCartesJoueur2().size() < 3) {
+                    if (borne.getCartesJoueur2().size() < borne.getTaille()) {
                         borne.getCartesJoueur2().add(carte);
                     } else {
                         if (joueur.estHumain()) {
@@ -118,34 +134,52 @@ public class JeuController {
             joueur.getCartes().remove(carte);
 
             // Lui distribuer une nouvelle carte
-            Carte nouvelleCarte = plateau.distribuerCarte();
+            Carte nouvelleCarte = null;
+            if (!isTactique) {
+                nouvelleCarte = plateau.distribuerCarte();
+            } else {
+                nouvelleCarte = plateau.distribuerCarteTactique();
+            }
+
             if (nouvelleCarte != null) {
                 joueur.getCartes().add(nouvelleCarte);
             }
-
-            Regle.verifierControleBorne(borne, joueur1, joueur2, plateau.getCartes());
+            if (!borne.isControlee()) {
+            	Regle.verifierControleBorne(borne, joueur1, joueur2, plateau.getCartes());
+    		}
             if (joueur.estHumain()) {
                 System.out.println("La carte a été jouée.");
             }
             tourManager.tourSuivant();
             return true;
-        } else {
-            return false;
-        }
     }
 
-    /**
-     * Afficher le plateau du jeu.
-     */
-    public void afficherPlateau() {
-        // Afficher les cartes du premier joueur
-        System.out.println("J1 : " + joueur1.getNom());
-        joueur1.afficherCartes();
-        for (Borne borne : bornes) {
-            borne.afficher();
+    /** Jouer des cartes qui ne sont pas vraiment jouées sur le plateau.
+     * @param carte la carte à jouer
+     * @param joueur le joueur qui joue
+     * @param isTactique true si la carte a distribué une carte tactique, false sinon
+     * @return true si la carte a été jouée, false sinon */
+    public boolean jouerCarteNonConcrete(Carte carte, Joueur joueur, boolean isTactique) {
+        joueur.getCartes().remove(carte);
+
+        // Lui distribuer une nouvelle carte
+        Carte nouvelleCarte = null;
+        if (!isTactique) {
+            nouvelleCarte = plateau.distribuerCarte();
+        } else {
+            nouvelleCarte = plateau.distribuerCarteTactique();
         }
-        System.out.println("J2 : " + joueur2.getNom());
-        joueur2.afficherCartes();
+
+        if (nouvelleCarte != null) {
+            joueur.getCartes().add(nouvelleCarte);
+        }
+
+        if (joueur.estHumain()) {
+            System.out.println("La carte a été jouée.");
+        }
+        tourManager.tourSuivant();
+        return true;
+
     }
 
     /**
@@ -212,7 +246,74 @@ public class JeuController {
         this.joueur2 = joueur2;
     }
     
+    /**
+     * Getter du tour manager.
+     * @return le tour manager
+     */
     public TourManager getTourManager() {
     	return this.tourManager;
+    }
+
+    /**
+     * Setter du tour manager.
+     * @param tourManager le tour manager
+     */
+    public void setTourManager(TourManager tourManager) {
+        this.tourManager = tourManager;
+    }
+
+    /**
+     * Getter du nombre de cartes à distribuer.
+     * @return le nombre de cartes à distribuer
+     */
+    public int getNbCartes() {
+        return nbCartes;
+    }
+
+    /**
+     * Setter du nombre de cartes à distribuer.
+     * @param nbCartes le nombre de cartes à distribuer
+     */
+    public void setNbCartes(int nbCartes) {
+        this.nbCartes = nbCartes;
+    }
+
+    /**
+     * Getter de la variante tactique.
+     * @return la variante tactique
+     */
+    public boolean getVarianteTactique() {
+        return varianteTactique;
+    }
+
+    /**
+     * Setter de la variante tactique.
+     * @param varianteTactique la variante tactique
+     */
+    public void setVarianteTactique(boolean varianteTactique) {
+        this.varianteTactique = varianteTactique;
+    }
+
+    /** Recommencer la partie */
+    public void recommencerPartie() {
+        // Créer les bornes
+        this.bornes = new ArrayList<Borne>();
+        for (int i = 1; i <= 9; i++) {
+            bornes.add(new Borne(i, new ArrayList<Carte>(), new ArrayList<Carte>(), false, null));
+        }
+
+        // Créer le plateau
+        this.plateau = new Plateau(this.nbCartes, this.varianteTactique);
+
+        // Les joueurs
+        this.joueur1 = new Joueur(joueur1.getNom(), 1, joueur1.estHumain());
+        this.joueur2 = new Joueur(joueur2.getNom(), 2, joueur2.estHumain());
+
+        // Le tour manager
+        this.tourManager = new TourManager(joueur1, joueur2);
+
+        // On distribue les cartes
+        plateau.distribuerCartesDepart(joueur1);
+        plateau.distribuerCartesDepart(joueur2);
     }
 }

@@ -15,6 +15,12 @@ public class Borne {
     private boolean controlee;
     /** Joueur qui contrôle la borne. */
     private Joueur joueurControle;
+    /** Taille de la borne. */
+    private int taille;
+    /** Colin-Maillard a été joué. */
+    private boolean colinJoue;
+    /** Combat de Boue a été joué */
+    private boolean boueJoue;
 
     /** Constructeur de la classe Borne.
      * @param id Identifiant de la borne.
@@ -28,6 +34,9 @@ public class Borne {
         this.cartesJoueur2 = cartesJoueur2;
         this.controlee = controlee;
         this.joueurControle = joueurControle;
+        this.taille = 3;
+        this.colinJoue = false;
+        this.boueJoue = false;
     }
 
     /** Getter de l'identifiant de la borne.
@@ -102,21 +111,63 @@ public class Borne {
         cartesJoueur2.add(carte);
     }
 
-    /** Afficher la borne. */
-    public void afficher() {
-        String cJ1 = "";
-        String cJ2 = "";
-        System.out.print("B" + id + " : ");
-        for (Carte carte : cartesJoueur1) {
-            cJ1 += carte.toString() + " ";
-        }
+    /** Getter de la taille de la borne.
+     * @return Taille de la borne. */
+    public int getTaille() {
+        return taille;
+    }
 
-        for (Carte carte : cartesJoueur2) {
-            cJ2 += carte.toString() + " ";
-        }
-        System.out.print("J1 : " + cJ1 + " J2 : " + cJ2);
-        if (controlee) {
-            System.out.println(" Contrôlée par " + joueurControle.getNom());
+    /** Setter de la taille de la borne.
+     * @param taille Taille de la borne. */
+    public void setTaille(int taille) {
+        this.taille = taille;
+    }
+    
+
+    /** Getter de l'indicateur de Colin-Maillard.
+     * @return Indicateur de Colin-Maillard. */
+    public boolean isColinJoue() {
+        return colinJoue;
+    }
+
+    /** Setter de l'indicateur de Colin-Maillard.
+     * @param colinJoue Indicateur de Colin-Maillard. */
+    public void setColinJoue(boolean colinJoue) {
+        this.colinJoue = colinJoue;
+    }
+
+    /** Getter de l'indicateur de Combat de Boue.
+     * @return Indicateur de Combat de Boue. */
+    public boolean isBoueJoue() {
+        return boueJoue;
+    }
+
+    /** Setter de l'indicateur de Combat de Boue.
+     * @param combatJoue Indicateur de Combat de Boue. */
+    public void setBoueJoue(boolean combatJoue) {
+        this.boueJoue = combatJoue;
+    }
+
+    /** Supprimer une carte par le premier joueur.
+     * @param carte Carte à supprimer. */
+    public void supprimerCarteJoueur1(Carte carte) {
+        cartesJoueur1.remove(carte);
+    }
+
+    /** Supprimer une carte par le deuxième joueur.
+     * @param carte Carte à supprimer. */
+    public void supprimerCarteJoueur2(Carte carte) {
+        cartesJoueur2.remove(carte);
+    }
+
+    /** Taille des cartes d'un joueur.
+     * @param idJoueur Identifiant du joueur.
+     * @return Taille des cartes du joueur. */
+    public int sizeBorneJoueur(int idJoueur) {
+        if (idJoueur == 1) {
+            return cartesJoueur1.size();
+        } else {
+            return cartesJoueur2.size();
         }
     }
 }

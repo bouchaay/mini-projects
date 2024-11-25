@@ -28,15 +28,23 @@ public class HandPanel extends JPanel {
         removeAll();  // Effacer les cartes existantes avant d'ajouter les nouvelles
         List<Carte> cartes = joueur.getCartes();  // Récupérer les cartes du joueur
 
+        String imagePath = "";
         // Ajouter une icône pour chaque carte
         for (int i = 0; i < cartes.size(); i++) {
-            String imagePath = "image/cartes/" + cartes.get(i).getCouleur().substring(0, 2) + cartes.get(i).getValeur() + ".png";
+            Carte carte = cartes.get(i);
+            // Si la carte n'est pas une carte tactique, afficher l'image de la carte
+            if (carte instanceof CarteTactic) {
+                CarteTactic carteTactic = (CarteTactic) carte;
+                imagePath = carteTactic.getCheminImage();
+            } else {
+                imagePath = "image/cartes/" + cartes.get(i).getCouleur().substring(0, 2) + cartes.get(i).getValeur() + ".png";
+            }
             JLabel cardLabel = createCardLabel(imagePath);
             add(cardLabel);
         }
 
-        revalidate();  // Recalculer la disposition
-        repaint();     // Redessiner le panneau
+        revalidate();
+        repaint();
     }
 
     private JLabel createCardLabel(String imagePath) {

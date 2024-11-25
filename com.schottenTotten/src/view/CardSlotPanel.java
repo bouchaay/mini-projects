@@ -8,17 +8,29 @@ import java.util.ArrayList;
 import java.util.List;
 import model.*;
 
+/** Classe pour définir un panel de slot de carte. */
 public class CardSlotPanel extends JPanel {
-    private static final int CARD_WIDTH = 200;
-    private static final int CARD_HEIGHT = 200;
-    private static final int VISIBLE_HEIGHT = CARD_HEIGHT / 4; // Décalage visible entre les cartes
-    private static final int MAX_CARDS = 3;
-    private Borne borne;
-    private int joueurId;
-    
 
+    /** Largeur d'une carte. */
+    private static final int CARD_WIDTH = 200;
+    /** Hauteur d'une carte. */
+    private static final int CARD_HEIGHT = 200;
+    /** Hauteur visible entre les cartes. */
+    private static final int VISIBLE_HEIGHT = CARD_HEIGHT / 4; // Décalage visible entre les cartes
+    /** Nombre maximum de cartes affichées. */
+    private static final int MAX_CARDS = 4;
+    /** Bornes du jeu. */
+    private Borne borne;
+    /** Id du joueur. */
+    private int joueurId;
+    /** Liste des cartes affichées. */
     private final List<JLabel> cards; // Stocke les cartes affichées
 
+    /**
+     * Constructeur de la classe CardSlotPanel.
+     * @param borne    Borne du jeu.
+     * @param joueurId Id du joueur.
+     */
     public CardSlotPanel(Borne borne, int joueurId) {
         this.cards = new ArrayList<>();
         this.borne = borne;
@@ -28,7 +40,10 @@ public class CardSlotPanel extends JPanel {
         setBorder(BorderFactory.createLineBorder(Color.GRAY));
     }
 
-    // Méthode pour ajouter une carte au slot
+    /**
+     * Méthode pour ajouter une carte au slot.
+     * @param cardIcon Image de la carte.
+     */
     public void addCard(ImageIcon cardIcon) {
         if (cards.size() < MAX_CARDS) {
             JLabel cardLabel = new JLabel(cardIcon);
@@ -45,18 +60,34 @@ public class CardSlotPanel extends JPanel {
         }
     }
 
+    /**
+     * Méthode pour mettre à jour le slot.
+     */
     public void updateSlot() {
         removeAll();
         cards.clear();
+        String imagePath = "";
         if (joueurId == 1) {
             for (Carte carte : borne.getCartesJoueur1()) {
-                String imagePath = "image/cartes/" + carte.getCouleur().substring(0, 2) + carte.getValeur() + ".png";
+                // Si la carte n'est pas une carte tactique, afficher l'image de la carte
+                if (carte instanceof CarteTactic) {
+                    CarteTactic carteTactic = (CarteTactic) carte;
+                    imagePath = carteTactic.getCheminImage();
+                } else {
+                    imagePath = "image/cartes/" + carte.getCouleur().substring(0, 2) + carte.getValeur() + ".png";
+                }
                 ImageIcon cardIcon = loadAndResizeImage(imagePath, CARD_WIDTH, CARD_HEIGHT);
                 addCard(cardIcon);
             }
         } else if (joueurId == 2) {
             for (Carte carte : borne.getCartesJoueur2()) {
-                String imagePath = "image/cartes/" + carte.getCouleur().substring(0, 2) + carte.getValeur() + ".png";
+                // Si la carte n'est pas une carte tactique, afficher l'image de la carte
+                if (carte instanceof CarteTactic) {
+                    CarteTactic carteTactic = (CarteTactic) carte;
+                    imagePath = carteTactic.getCheminImage();
+                } else {
+                    imagePath = "image/cartes/" + carte.getCouleur().substring(0, 2) + carte.getValeur() + ".png";
+                }
                 ImageIcon cardIcon = loadAndResizeImage(imagePath, CARD_WIDTH, CARD_HEIGHT);
                 addCard(cardIcon);
             }
@@ -65,7 +96,9 @@ public class CardSlotPanel extends JPanel {
         repaint();
     }
 
-    // Méthode pour réinitialiser le slot
+    /**
+     * Méthode pour effacer les cartes.
+     */
     public void clearCards() {
         cards.clear();
         removeAll();
@@ -73,6 +106,13 @@ public class CardSlotPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Méthode pour charger et redimensionner une image.
+     * @param imagePath Chemin de l'image.
+     * @param width     Largeur de l'image.
+     * @param height    Hauteur de l'image.
+     * @return ImageIcon de l'image chargée.
+     */
     private ImageIcon loadAndResizeImage(String imagePath, int width, int height) {
         try {
             Image img = ImageIO.read(new File(imagePath));
@@ -83,6 +123,9 @@ public class CardSlotPanel extends JPanel {
         }
     }
 
+    /**
+     * Méthode pour mettre en surbrillance le slot.
+     */
     public void highlight() {
         setBorder(BorderFactory.createLineBorder(Color.RED, 3));
     }

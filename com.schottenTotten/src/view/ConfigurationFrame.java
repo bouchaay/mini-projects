@@ -2,8 +2,6 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import controller.JeuController;
 import ia.EasyStrategy;
 import ia.HardStrategy;
@@ -12,17 +10,31 @@ import ia.IntermediateStrategy;
 import ia.Strategy;
 import model.Joueur;
 
+/**
+ * ConfigurationFrame est la fenêtre de configuration des joueurs.
+ */
 public class ConfigurationFrame extends JFrame {
+
+    /** type de joueur 1. */
     private JComboBox<String> joueur1Type;
+    /** Nom du joueur 1. */
     private JTextField joueur1Nom;
+    /** Stratégie de l'IA 1. */
     private JComboBox<String> iaStrategy1;
-
+    /** Type de joueur 2. */
     private JComboBox<String> joueur2Type;
+    /** Nom du joueur 2. */
     private JTextField joueur2Nom;
+    /** Stratégie de l'IA 2. */
     private JComboBox<String> iaStrategy2;
-
+    /** Bouton pour commencer la partie. */
     private JButton commencerPartie;
+    /** Variante du jeu. */
+    private JComboBox<String> variante;
 
+    /**
+     * Constructeur de ConfigurationFrame.
+     */
     public ConfigurationFrame() {
         setTitle("Configuration des Joueurs");
         setSize(600, 400);
@@ -38,6 +50,7 @@ public class ConfigurationFrame extends JFrame {
 
         joueur1Panel.add(new JLabel("Type du Joueur :"));
         joueur1Type = new JComboBox<>(new String[]{"Humain", "IA"});
+        SidePanel.setComboBoxSize(joueur1Type);
         joueur1Panel.add(joueur1Type);
 
         joueur1Panel.add(new JLabel("Nom du Joueur :"));
@@ -46,6 +59,7 @@ public class ConfigurationFrame extends JFrame {
 
         joueur1Panel.add(new JLabel("Stratégie pour IA :"));
         iaStrategy1 = new JComboBox<>(new String[]{"Easy", "Medium", "Hard"});
+        SidePanel.setComboBoxSize(iaStrategy1);
         iaStrategy1.setEnabled(false);
         joueur1Panel.add(iaStrategy1);
 
@@ -55,6 +69,7 @@ public class ConfigurationFrame extends JFrame {
 
         joueur2Panel.add(new JLabel("Type du Joueur :"));
         joueur2Type = new JComboBox<>(new String[]{"Humain", "IA"});
+        SidePanel.setComboBoxSize(joueur2Type);
         joueur2Panel.add(joueur2Type);
 
         joueur2Panel.add(new JLabel("Nom du Joueur :"));
@@ -63,12 +78,20 @@ public class ConfigurationFrame extends JFrame {
 
         joueur2Panel.add(new JLabel("Stratégie pour IA :"));
         iaStrategy2 = new JComboBox<>(new String[]{"Easy", "Medium", "Hard"});
+        SidePanel.setComboBoxSize(iaStrategy2);
         iaStrategy2.setEnabled(false);
         joueur2Panel.add(iaStrategy2);
 
         // Ajouter les grilles au panel principal
         mainPanel.add(joueur1Panel);
         mainPanel.add(joueur2Panel);
+
+        // Variante du jeu
+        JPanel variantePanel = new JPanel(new GridLayout(1, 2, 5, 5));
+        JLabel labelVariante = new JLabel("Variante du jeu :");
+        variante = new JComboBox<>(new String[]{"Base", "Tactique"});
+        variantePanel.add(labelVariante);
+        variantePanel.add(variante);
 
         // Bouton "Commencer la Partie"
         commencerPartie = new JButton("Commencer la Partie");
@@ -91,15 +114,21 @@ public class ConfigurationFrame extends JFrame {
 
         // Ajouter les composants au frame
         add(mainPanel, BorderLayout.CENTER);
+        add(variantePanel, BorderLayout.NORTH);
         add(commencerPartie, BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
+    /**
+     * Méthode pour lancer le jeu.
+     */
     private void lancerJeu() {
     	// Configuration des joueurs
         Joueur joueur1 = null;
         Joueur joueur2 = null;
+        int nbCartes = variante.getSelectedItem().equals("Base") ? 6 : 7;
+        boolean varianteTactique = variante.getSelectedItem().equals("Tactique");
         if (joueur1Type.getSelectedItem().equals("IA")) {
             Strategy strategie1 = creerStrategie((String) iaStrategy1.getSelectedItem());
             joueur1 = new IA(1, strategie1);
@@ -115,15 +144,22 @@ public class ConfigurationFrame extends JFrame {
         }
 
         // Créer le contrôleur de jeu avec les joueurs configurés
-        JeuController jeuController = new JeuController(joueur1, joueur2);
+        JeuController jeuController = new JeuController(joueur1, joueur2, nbCartes, varianteTactique);
 
         // Lancer l'interface principale
-        new ShottenTottenSwing(jeuController).createAndShowGUI();
+        ShottenTottenSwing mainFrame = new ShottenTottenSwing(jeuController);
+        mainFrame.createAndShowGUI();
+        
 
         // Fermer la fenêtre de configuration
         dispose();
     }
 
+    /**
+     * Méthode pour créer une stratégie.
+     * @param nomStrategie Nom de la stratégie.
+     * @return Strategy
+     */
     private Strategy creerStrategie(String nomStrategie) {
         switch (nomStrategie) {
             case "Hard":
